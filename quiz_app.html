@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #adccfe;
+            transition: background 0.5s ease-in-out;
+        }
+        .quiz-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .option {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .option:hover {
+            transform: scale(1.05);
+        }
+        .option.correct {
+            background-color: #28a745;
+        }
+        .option.wrong {
+            background-color: #dc3545;
+        }
+        .score-card {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .dark-mode {
+            background: #edb9e2;
+            color: white;
+        }
+        .toggle-btn {
+            margin-top: 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background: #0a0b0b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Quiz</h1>
+    <div class="quiz-container" id="quiz-box">
+        <h2 id="question">Interactive Quiz</h2>
+        <p class="timer" id="timer">Time Left: 15s</p>
+        <div id="options"></div>
+        <div id="score-card" class="score-card">
+            <h3>Quiz Completed!</h3>
+            <p id="final-score"></p>
+        </div>
+        <button class="toggle-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "1. What is the capital of France?", options: ["Berlin", "Madrid", "Paris", "Rome"], answer: "Paris" },
+            { question: "2. Who wrote the play *Romeo and Juliet*?", options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"], answer: "William Shakespeare" },
+            { question: "3. What is the largest planet in our solar system?", options: ["Earth", "Jupiter", "Mars", "Venus"], answer: "Jupiter" },
+            { question: "4. How many continents are there on Earth?", options: ["5", "6", "7", "8"], answer: "7" },
+            { question: "5. What is the boiling point of water?", options: ["90°C", "100°C", "120°C", "80°C"], answer: "100°C" }
+        ];
+        
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = 15;
+        let timerInterval;
+        let countdownSound = new Audio("https://www.soundjay.com/button/beep-07.wav");
+
+        function startTimer() {
+            timeLeft = 15;
+            document.getElementById("timer").textContent = `Time Left: ${timeLeft}s`;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").textContent = `Time Left: ${timeLeft}s`;
+                countdownSound.play();
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    currentQuestionIndex++;
+                    loadQuestion();
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showScoreCard();
+                return;
+            }
+
+            const questionElement = document.getElementById("question");
+            const optionsContainer = document.getElementById("options");
+            optionsContainer.innerHTML = "";
+            
+            questionElement.textContent = questions[currentQuestionIndex].question;
+            
+            questions[currentQuestionIndex].options.forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.classList.add("option");
+                button.onclick = () => checkAnswer(option, button);
+                optionsContainer.appendChild(button);
+            });
+            
+            startTimer();
+        }
+
+        function checkAnswer(answer, button) {
+            clearInterval(timerInterval);
+            if (answer === questions[currentQuestionIndex].answer) {
+                score++;
+                button.classList.add("correct");
+            } else {
+                button.classList.add("wrong");
+            }
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1000);
+        }
+
+        function showScoreCard() {
+            document.getElementById("question").style.display = "none";
+            document.getElementById("options").style.display = "none";
+            document.getElementById("timer").style.display = "none";
+            document.getElementById("score-card").style.display = "block";
+            document.getElementById("final-score").textContent = `Your Final Score: ${score}/${questions.length}`;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            document.getElementById("quiz-box").classList.toggle("dark-mode");
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
